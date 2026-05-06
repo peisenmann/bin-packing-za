@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { findBerryCombinations } from "../src/lib/find-berry-combinations.ts";
 import type { KnownResultsPayload } from "../src/lib/known-results-types.ts";
 import { SPECIAL_DONUT_PRESETS } from "../src/lib/special-donut-presets.ts";
+import { compressRecipe } from "../src/lib/donut.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "src/assets/known_results");
@@ -15,28 +16,28 @@ const outDir = join(root, "src/assets/known_results");
 await mkdir(outDir, { recursive: true });
 
 for (const preset of SPECIAL_DONUT_PRESETS) {
-	const target = {
-		fresh: preset.fresh,
-		sour: preset.sour,
-		bitter: preset.bitter,
-		sweet: preset.sweet,
-		spicy: preset.spicy,
-	} as const;
+  const target = {
+    fresh: preset.fresh,
+    sour: preset.sour,
+    bitter: preset.bitter,
+    sweet: preset.sweet,
+    spicy: preset.spicy,
+  } as const;
 
-	console.log(`Generating ${preset.id}...`);
-	const started = performance.now();
-	const combos = findBerryCombinations(target);
-	const ms = Math.round(performance.now() - started);
+  console.log(`Generating ${preset.id}...`);
+  const started = performance.now();
+  const combos = findBerryCombinations(target);
+  const ms = Math.round(performance.now() - started);
 
-	const payload: KnownResultsPayload = {
-		presetId: preset.id,
-		generatedAt: new Date().toISOString(),
-		target: { ...target },
-		comboCount: combos.length,
-		combos,
-	};
+  const payload: KnownResultsPayload = {
+    presetId: preset.id,
+    generatedAt: new Date().toISOString(),
+    target: { ...target },
+    comboCount: combos.length,
+    combos: combos.map((combo) => compressRecipe(combo)),
+  };
 
-	const filePath = join(outDir, `${preset.id}.json`);
-	await writeFile(filePath, `${JSON.stringify(payload)}\n`, "utf8");
-	console.log(`Wrote ${filePath} (${combos.length} combos, ${ms}ms)`);
+  const filePath = join(outDir, `${preset.id}.json`);
+  await writeFile(filePath, `${JSON.stringify(payload)}\n`, "utf8");
+  console.log(`Wrote ${filePath} (${combos.length} combos, ${ms}ms)`);
 }

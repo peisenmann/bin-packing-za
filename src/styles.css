@@ -1,3 +1,55 @@
+/*
+ * Univers Next Pro — loaded for future use (not applied globally yet).
+ * Use e.g. font-family: var(--font-univers-next-pro); on specific components when ready.
+ */
+@font-face {
+  font-family: "Univers Next Pro";
+  src: url("./assets/fonts/Univers Next Pro Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers Next Pro";
+  src: url("./assets/fonts/Univers Next Pro Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers Next Pro";
+  src: url("./assets/fonts/Univers Next Pro Heavy.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers Next Pro";
+  src: url("./assets/fonts/UniversNextProBold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers Next Pro";
+  src: url("./assets/fonts/UniversNextProItalic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers Next Pro";
+  src: url("./assets/fonts/UniversNextProBoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light dark;
   --bg: #0f1218;
@@ -9,18 +61,24 @@
   --accent-dim: #5a9a5a;
   --error: #e07a7a;
   --font: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-univers-next-pro: "Univers Next Pro", Helvetica, sans-serif;
   --radius: 10px;
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 
   /*
-   * Flavor colors — Pokémon Legends–style flavor profile (pill / radar palette).
-   * Order matches Serebii/game table: Sweet · Spicy · Sour · Bitter · Fresh
+   * Flavor colors — match in-game pill RGB (non-zero and zero states).
+   * Order: Sweet · Spicy · Sour · Bitter · Fresh
    */
-  --flavor-fresh: #3ddc84;
-  --flavor-sour: #e8b82e;
-  --flavor-bitter: #5a9ef0;
-  --flavor-sweet: #ff5eb3;
-  --flavor-spicy: #ff5a52;
+  --flavor-sweet: rgb(240, 148, 203);
+  --flavor-spicy: rgb(237, 101, 108);
+  --flavor-sour: rgb(232, 172, 60);
+  --flavor-bitter: rgb(113, 141, 247);
+  --flavor-fresh: rgb(92, 193, 115);
+  --flavor-sweet-zero: rgb(87, 74, 83);
+  --flavor-spicy-zero: rgb(86, 69, 73);
+  --flavor-sour-zero: rgb(89, 81, 64);
+  --flavor-bitter-zero: rgb(68, 71, 88);
+  --flavor-fresh-zero: rgb(65, 82, 74);
 }
 
 @media (prefers-color-scheme: light) {
@@ -47,7 +105,8 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font);
-  background: radial-gradient(
+  background:
+    radial-gradient(
       1200px 600px at 10% -10%,
       rgba(124, 184, 124, 0.12),
       transparent
@@ -176,7 +235,9 @@ body {
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .preset-chip-icon {
@@ -467,17 +528,63 @@ body {
   font-size: 0.95rem;
 }
 
+#results-panel {
+  font-family: var(--font-univers-next-pro);
+}
+
 .results-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.5rem 1rem;
   margin-bottom: 0.75rem;
 }
 
-.results-head h2 {
+/*
+ * Arched section title (SVG textPath): reusable via `archedSectionTitleHtml`.
+ * Serif stack + navy fill + white shell — not using panel Univers font.
+ */
+.section-title {
   margin: 0;
+}
+
+.section-title--arched {
+  line-height: 0;
+}
+
+.section-title--arched .section-title__svg {
+  display: block;
+  width: min(100%, 26.25rem);
+  height: auto;
+  overflow: visible;
+}
+
+.section-title--arched .section-title__svg text {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 43px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.section-title--arched .section-title__outline-outer {
+  stroke: #ffffff;
+  stroke-width: 11px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.section-title--arched .section-title__outline-inner {
+  stroke: color-mix(in srgb, #dfe8f4 78%, #b8c8dc);
+  stroke-width: 6.5px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.section-title--arched .section-title__fill {
+  fill: #1a305b;
 }
 
 .muted {
@@ -558,9 +665,10 @@ body {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-areas:
-    "rank berries cal"
-    "rank flavors flavors";
+    "rank berries donut"
+    "rank flavors cal";
   gap: 0.15rem 0.75rem;
+  align-items: start;
   padding: 0.65rem 0.5rem;
   border-bottom: 1px solid var(--border);
   font-size: 0.92rem;
@@ -583,8 +691,52 @@ body {
   font-weight: 500;
 }
 
+.combo-donut-cell {
+  grid-area: donut;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.combo-donut-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.combo-donut-img {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  image-rendering: crisp-edges;
+}
+
+.combo-star-row {
+  display: flex;
+  gap: 0.06rem;
+  font-size: 0.88rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.combo-star {
+  font-family: inherit;
+}
+
+.combo-star--lit {
+  color: #e8c84a;
+  text-shadow: 0 0 6px rgba(232, 200, 74, 0.35);
+}
+
+.combo-star--dim {
+  color: var(--muted);
+  opacity: 0.38;
+}
+
 .combo-cal {
   grid-area: cal;
+  align-self: start;
+  justify-self: end;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   color: var(--accent);
@@ -594,61 +746,127 @@ body {
 .combo-flavors {
   grid-area: flavors;
   font-size: 0.82rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  display: grid;
+  grid-template-columns: minmax(0, auto) 1fr;
   align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.combo-flavor-stats {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  justify-self: end;
+  min-width: 0;
+}
+
+.combo-flavor-details-link {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.combo-flavor-details-link:hover {
+  color: var(--accent-dim);
+}
+
+.combo-flavor-total,
+.combo-flavor-level-boost {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 650;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  background: color-mix(in srgb, var(--muted) 16%, var(--surface));
+  border: 1px solid var(--border);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.combo-flavor-pills {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
 .flavor-pill {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.78rem;
-  text-transform: capitalize;
-  border: 1px solid transparent;
+  justify-content: center;
+  min-width: 2.65rem;
+  padding: 0.28rem 0.42rem;
+  border-radius: 4px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.82rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  color: #fff;
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+  /*
+   * Text shadow on the numbers for better contrast
+   */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 /* Pill order matches FLAVOR_KEYS / Serebii table */
-.flavor-pill--sweet {
-  background: color-mix(in srgb, var(--flavor-sweet) 26%, var(--surface));
-  color: color-mix(in srgb, var(--flavor-sweet) 82%, var(--text));
-  border-color: color-mix(in srgb, var(--flavor-sweet) 42%, var(--border));
+.flavor-pill--sweet:not(.flavor-pill--zero) {
+  background: var(--flavor-sweet);
 }
 
-.flavor-pill--spicy {
-  background: color-mix(in srgb, var(--flavor-spicy) 26%, var(--surface));
-  color: color-mix(in srgb, var(--flavor-spicy) 82%, var(--text));
-  border-color: color-mix(in srgb, var(--flavor-spicy) 42%, var(--border));
+.flavor-pill--spicy:not(.flavor-pill--zero) {
+  background: var(--flavor-spicy);
 }
 
-.flavor-pill--sour {
-  background: color-mix(in srgb, var(--flavor-sour) 26%, var(--surface));
-  color: color-mix(in srgb, var(--flavor-sour) 82%, var(--text));
-  border-color: color-mix(in srgb, var(--flavor-sour) 42%, var(--border));
+.flavor-pill--sour:not(.flavor-pill--zero) {
+  background: var(--flavor-sour);
 }
 
-.flavor-pill--bitter {
-  background: color-mix(in srgb, var(--flavor-bitter) 26%, var(--surface));
-  color: color-mix(in srgb, var(--flavor-bitter) 82%, var(--text));
-  border-color: color-mix(in srgb, var(--flavor-bitter) 42%, var(--border));
+.flavor-pill--bitter:not(.flavor-pill--zero) {
+  background: var(--flavor-bitter);
 }
 
-.flavor-pill--fresh {
-  background: color-mix(in srgb, var(--flavor-fresh) 26%, var(--surface));
-  color: color-mix(in srgb, var(--flavor-fresh) 82%, var(--text));
-  border-color: color-mix(in srgb, var(--flavor-fresh) 42%, var(--border));
+.flavor-pill--fresh:not(.flavor-pill--zero) {
+  background: var(--flavor-fresh);
+}
+
+.flavor-pill--sweet.flavor-pill--zero {
+  background: var(--flavor-sweet-zero);
+}
+
+.flavor-pill--spicy.flavor-pill--zero {
+  background: var(--flavor-spicy-zero);
+}
+
+.flavor-pill--sour.flavor-pill--zero {
+  background: var(--flavor-sour-zero);
+}
+
+.flavor-pill--bitter.flavor-pill--zero {
+  background: var(--flavor-bitter-zero);
+}
+
+.flavor-pill--fresh.flavor-pill--zero {
+  background: var(--flavor-fresh-zero);
 }
 
 @media (max-width: 520px) {
   .combo-row {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto 1fr auto;
     grid-template-areas:
-      "rank berries"
-      "rank cal"
-      "rank flavors";
+      "rank berries donut"
+      "rank flavors cal";
   }
 }

@@ -1,153 +1,151 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta
-			name="description"
-			content="Find lowest-calorie berry combinations that meet flavor targets (up to 8 berries)."
-		/>
-		<title>Pokémon Legends Z-A Donut Recipes</title>
-		<link rel="stylesheet" href="/src/styles.css" />
-	</head>
-	<body>
-		<div class="page">
-			<header class="header">
-				<h1>Pokémon Legends Z-A Donut Recipes</h1>
-				<p class="lede">
-					Find all possible donut recipes that you can make with your berries.
-				</p>
-			</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Find lowest-calorie berry recipes that meet flavor targets (up to 8 berries)."
+    />
+    <title>Pokémon Legends Z-A Donut Recipes</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <h1>Pokémon Legends Z-A Donut Recipes</h1>
+        <p class="lede">
+          Find all possible donut recipes that you can make with your berries.
+        </p>
+      </header>
 
-			<section
-				class="panel inventory-section"
-				aria-labelledby="inventory-section-heading"
-			>
-				<h2 id="inventory-section-heading">Your inventory</h2>
-				<details class="inventory-details" open>
-					<summary class="inventory-summary">
-						<span class="inventory-summary-label"
-							>Expand to alter what berries are available</span
-						>
-					</summary>
-					<p class="inventory-hint muted">
-						Leave blank for unlimited.
-						<strong>0</strong> excludes any combo that uses that berry. A
-						positive integer caps how many of that berry a combo may use.
-					</p>
-					<div
-						id="berry-inventory-grid"
-						class="inventory-grid"
-						role="group"
-						aria-label="Inventory cap per berry"
-					></div>
-				</details>
-			</section>
+      <section
+        class="panel inventory-section"
+        aria-labelledby="inventory-section-heading"
+      >
+        <details class="inventory-details" open>
+          <summary class="inventory-summary">
+            <span class="inventory-summary-label"
+              >Expand to alter what berries are available</span
+            >
+          </summary>
+          <p class="inventory-hint muted">
+            Leave blank for unlimited.
+            <strong>0</strong> excludes any combo that uses that berry. A
+            positive integer caps how many of that berry a combo may use.
+          </p>
+          <div
+            id="berry-inventory-grid"
+            class="inventory-grid"
+            role="group"
+            aria-label="Inventory cap per berry"
+          ></div>
+        </details>
+      </section>
 
-			<section class="panel" aria-labelledby="targets-heading">
-				<h2 id="targets-heading">Recipe Finder</h2>
-				<div class="preset-block">
-					<details class="preset-details">
-						<summary class="preset-summary">
-							<span id="presets-label" class="preset-summary-label">
-								Special donuts (Spoilers!)
-							</span>
-						</summary>
-						<div
-							class="preset-chips"
-							id="special-donut-presets"
-							role="group"
-							aria-labelledby="presets-label"
-						></div>
-					</details>
-				</div>
-				<h3 id="flavor-targets-heading" class="flavor-targets-heading">
-					Flavor targets
-				</h3>
-				<form
-					id="target-form"
-					class="grid-form"
-					aria-labelledby="flavor-targets-heading"
-				>
-					<label class="flavor-field flavor-field--sweet">
-						Sweet
-						<input
-							type="number"
-							name="sweet"
-							min="0"
-							step="1"
-							value="50"
-							required
-						/>
-					</label>
-					<label class="flavor-field flavor-field--spicy">
-						Spicy
-						<input
-							type="number"
-							name="spicy"
-							min="0"
-							step="1"
-							value="50"
-							required
-						/>
-					</label>
-					<label class="flavor-field flavor-field--sour">
-						Sour
-						<input
-							type="number"
-							name="sour"
-							min="0"
-							step="1"
-							value="210"
-							required
-						/>
-					</label>
-					<label class="flavor-field flavor-field--bitter">
-						Bitter
-						<input
-							type="number"
-							name="bitter"
-							min="0"
-							step="1"
-							value="180"
-							required
-						/>
-					</label>
-					<label class="flavor-field flavor-field--fresh">
-						Fresh
-						<input
-							type="number"
-							name="fresh"
-							min="0"
-							step="1"
-							value="370"
-							required
-						/>
-					</label>
-					<div class="actions">
-						<button type="submit" id="submit-btn">Find combinations</button>
-					</div>
-				</form>
-				<p id="form-error" class="error" role="alert" hidden></p>
-			</section>
+      <section class="panel" aria-labelledby="targets-heading">
+        <h3 id="flavor-targets-heading" class="flavor-targets-heading">
+          Flavor targets
+        </h3>
+        <div class="preset-block">
+          <details class="preset-details">
+            <summary class="preset-summary">
+              <span id="presets-label" class="preset-summary-label">
+                Special donuts (Spoilers! - Tap to expand)
+              </span>
+            </summary>
+            <div
+              class="preset-chips"
+              id="special-donut-presets"
+              role="group"
+              aria-labelledby="presets-label"
+            ></div>
+          </details>
+        </div>
+        <form
+          id="target-form"
+          class="grid-form"
+          aria-labelledby="flavor-targets-heading"
+        >
+          <label class="flavor-field flavor-field--sweet">
+            Sweet
+            <input
+              type="number"
+              name="sweet"
+              min="0"
+              step="1"
+              value="50"
+              required
+            />
+          </label>
+          <label class="flavor-field flavor-field--spicy">
+            Spicy
+            <input
+              type="number"
+              name="spicy"
+              min="0"
+              step="1"
+              value="50"
+              required
+            />
+          </label>
+          <label class="flavor-field flavor-field--sour">
+            Sour
+            <input
+              type="number"
+              name="sour"
+              min="0"
+              step="1"
+              value="210"
+              required
+            />
+          </label>
+          <label class="flavor-field flavor-field--bitter">
+            Bitter
+            <input
+              type="number"
+              name="bitter"
+              min="0"
+              step="1"
+              value="180"
+              required
+            />
+          </label>
+          <label class="flavor-field flavor-field--fresh">
+            Fresh
+            <input
+              type="number"
+              name="fresh"
+              min="0"
+              step="1"
+              value="370"
+              required
+            />
+          </label>
+          <div class="actions">
+            <button type="submit" id="submit-btn">Find recipes</button>
+          </div>
+        </form>
+        <p id="form-error" class="error" role="alert" hidden></p>
+      </section>
 
-			<section
-				class="panel results"
-				id="results-panel"
-				aria-live="polite"
-				aria-busy="false"
-			>
-				<div class="results-head">
-					<h2>Results</h2>
-					<p id="results-summary" class="muted"></p>
-				</div>
-				<div id="results-loading" class="results-loading" role="status" hidden>
-					<div class="spinner" aria-hidden="true"></div>
-					<p class="results-loading-text">Calculating combinations…</p>
-				</div>
-				<div id="results-body" class="results-body"></div>
-			</section>
-		</div>
-		<script type="module" src="/src/main.ts"></script>
-	</body>
+      <section
+        class="panel results"
+        id="results-panel"
+        aria-labelledby="results-section-heading"
+        aria-live="polite"
+        aria-busy="false"
+      >
+        <div class="results-head">
+          <p id="results-summary" class="muted"></p>
+        </div>
+        <div id="results-loading" class="results-loading" role="status" hidden>
+          <div class="spinner" aria-hidden="true"></div>
+          <p class="results-loading-text">Calculating recipes</p>
+        </div>
+        <div id="results-body" class="results-body"></div>
+      </section>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
