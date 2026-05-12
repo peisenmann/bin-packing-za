@@ -44,89 +44,162 @@
       </section>
 
       <section class="panel" aria-labelledby="targets-heading">
-        <h3 id="flavor-targets-heading" class="flavor-targets-heading">
-          Flavor targets
-        </h3>
-        <div class="preset-block">
-          <details class="preset-details">
-            <summary class="preset-summary">
-              <span id="presets-label" class="preset-summary-label">
-                Special donuts (Spoilers! - Tap to expand)
-              </span>
-            </summary>
-            <div
-              class="preset-chips"
-              id="special-donut-presets"
-              role="group"
-              aria-labelledby="presets-label"
-            ></div>
-          </details>
+        <div class="rf-tabs" role="tablist" aria-label="Recipe Finder mode">
+          <button
+            class="rf-tab rf-tab--active"
+            role="tab"
+            id="tab-flavor-targets"
+            aria-selected="true"
+            aria-controls="tabpanel-flavor-targets"
+          >
+            Flavor Targets
+          </button>
+          <button
+            class="rf-tab"
+            role="tab"
+            id="tab-maximizer"
+            aria-selected="false"
+            aria-controls="tabpanel-maximizer"
+          >
+            Maximizer
+          </button>
         </div>
-        <form
-          id="target-form"
-          class="grid-form"
-          aria-labelledby="flavor-targets-heading"
+
+        <div
+          class="rf-tabpanel"
+          role="tabpanel"
+          id="tabpanel-flavor-targets"
+          aria-labelledby="tab-flavor-targets"
         >
-          <label class="flavor-field flavor-field--sweet">
-            Sweet
-            <input
-              type="number"
-              name="sweet"
-              min="0"
-              step="1"
-              value="50"
-              required
-            />
-          </label>
-          <label class="flavor-field flavor-field--spicy">
-            Spicy
-            <input
-              type="number"
-              name="spicy"
-              min="0"
-              step="1"
-              value="50"
-              required
-            />
-          </label>
-          <label class="flavor-field flavor-field--sour">
-            Sour
-            <input
-              type="number"
-              name="sour"
-              min="0"
-              step="1"
-              value="210"
-              required
-            />
-          </label>
-          <label class="flavor-field flavor-field--bitter">
-            Bitter
-            <input
-              type="number"
-              name="bitter"
-              min="0"
-              step="1"
-              value="180"
-              required
-            />
-          </label>
-          <label class="flavor-field flavor-field--fresh">
-            Fresh
-            <input
-              type="number"
-              name="fresh"
-              min="0"
-              step="1"
-              value="370"
-              required
-            />
-          </label>
-          <div class="actions">
-            <button type="submit" id="submit-btn">Find recipes</button>
+          <div class="preset-block">
+            <details class="preset-details">
+              <summary class="preset-summary">
+                <span id="presets-label" class="preset-summary-label">
+                  Special donuts (Spoilers! - Tap to expand)
+                </span>
+              </summary>
+              <div
+                class="preset-chips"
+                id="special-donut-presets"
+                role="group"
+                aria-labelledby="presets-label"
+              ></div>
+            </details>
           </div>
-        </form>
-        <p id="form-error" class="error" role="alert" hidden></p>
+          <form
+            id="target-form"
+            class="grid-form"
+            aria-labelledby="tab-flavor-targets"
+          >
+            <label class="flavor-field flavor-field--sweet">
+              Sweet
+              <input
+                type="number"
+                name="sweet"
+                min="0"
+                step="1"
+                value="50"
+                required
+              />
+            </label>
+            <label class="flavor-field flavor-field--spicy">
+              Spicy
+              <input
+                type="number"
+                name="spicy"
+                min="0"
+                step="1"
+                value="50"
+                required
+              />
+            </label>
+            <label class="flavor-field flavor-field--sour">
+              Sour
+              <input
+                type="number"
+                name="sour"
+                min="0"
+                step="1"
+                value="210"
+                required
+              />
+            </label>
+            <label class="flavor-field flavor-field--bitter">
+              Bitter
+              <input
+                type="number"
+                name="bitter"
+                min="0"
+                step="1"
+                value="180"
+                required
+              />
+            </label>
+            <label class="flavor-field flavor-field--fresh">
+              Fresh
+              <input
+                type="number"
+                name="fresh"
+                min="0"
+                step="1"
+                value="370"
+                required
+              />
+            </label>
+            <div class="actions">
+              <button type="submit" id="submit-btn">Find recipes</button>
+            </div>
+          </form>
+          <p id="form-error" class="error" role="alert" hidden></p>
+        </div>
+
+        <div
+          class="rf-tabpanel"
+          role="tabpanel"
+          id="tabpanel-maximizer"
+          aria-labelledby="tab-maximizer"
+          hidden
+        >
+          <form
+            id="maximizer-form"
+            class="maximizer-form"
+            aria-labelledby="tab-maximizer"
+          >
+            <div class="maximizer-selects">
+              <label class="maximizer-field">
+                Maximize
+                <select name="primary" required>
+                  <option value="calories">Calories</option>
+                  <option value="levels">Levels</option>
+                  <option value="sweet">Sweet</option>
+                  <option value="spicy">Spicy</option>
+                  <option value="sour">Sour</option>
+                  <option value="bitter">Bitter</option>
+                  <option value="fresh">Fresh</option>
+                </select>
+              </label>
+              <label class="maximizer-field">
+                Tie-breaker
+                <select name="secondary">
+                  <option value="">(none)</option>
+                  <option value="calories">Calories</option>
+                  <option value="levels">Levels</option>
+                  <option value="sweet">Sweet</option>
+                  <option value="spicy">Spicy</option>
+                  <option value="sour">Sour</option>
+                  <option value="bitter">Bitter</option>
+                  <option value="fresh">Fresh</option>
+                </select>
+              </label>
+            </div>
+            <div class="actions">
+              <button type="submit" id="maximizer-submit-btn">
+                Find recipes
+              </button>
+            </div>
+          </form>
+          <p id="maximizer-error" class="error" role="alert" hidden></p>
+        </div>
       </section>
 
       <section
@@ -137,6 +210,11 @@
         aria-busy="false"
       >
         <div class="results-head">
+          <div
+            id="results-targets"
+            class="results-targets"
+            aria-label="Searched flavor targets"
+          ></div>
           <p id="results-summary" class="muted"></p>
         </div>
         <div id="results-loading" class="results-loading" role="status" hidden>
@@ -147,5 +225,12 @@
       </section>
     </div>
     <script type="module" src="/src/main.ts"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
   </body>
 </html>

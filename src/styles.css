@@ -388,6 +388,95 @@ body {
   outline-offset: 2px;
 }
 
+/* Recipe-Finder tabs */
+.rf-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.15rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.rf-tab {
+  position: relative;
+  padding: 0.55rem 1.15rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.rf-tab:hover {
+  color: var(--text);
+}
+
+.rf-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.rf-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 4px 4px 0 0;
+}
+
+.rf-tabpanel[hidden] {
+  display: none;
+}
+
+.maximizer-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem 1.25rem;
+}
+
+.maximizer-selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.25rem;
+  flex: 1 1 auto;
+}
+
+.maximizer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  min-width: 140px;
+  flex: 1 1 140px;
+}
+
+.maximizer-field select {
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239aa7bd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  padding-right: 2rem;
+}
+
+.maximizer-field select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .flavor-targets-heading {
   margin: 0 0 0.85rem;
   font-size: 1rem;
@@ -534,11 +623,25 @@ body {
 
 .results-head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 0.5rem 1rem;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
   margin-bottom: 0.75rem;
+}
+
+.results-targets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.results-targets:empty {
+  display: none;
+}
+
+.results-targets .flavor-pill {
+  font-size: 0.78rem;
 }
 
 /*
@@ -569,7 +672,7 @@ body {
 
 .section-title--arched .section-title__outline-outer {
   stroke: #ffffff;
-  stroke-width: 11px;
+  stroke-width: 25px;
   stroke-linejoin: round;
   stroke-linecap: round;
   fill: none;
@@ -577,7 +680,7 @@ body {
 
 .section-title--arched .section-title__outline-inner {
   stroke: color-mix(in srgb, #dfe8f4 78%, #b8c8dc);
-  stroke-width: 6.5px;
+  stroke-width: 10px;
   stroke-linejoin: round;
   stroke-linecap: round;
   fill: none;

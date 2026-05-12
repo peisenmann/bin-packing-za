@@ -84,12 +84,18 @@ function getFlavorSummary(recipe: Berry[]): FlavorSummary {
     }),
   );
   flavors.sort((a, b) => b.score - a.score);
+  console.log("flavors", flavors);
   if (
-    flavors[0]?.score &&
-    flavors[1]?.score &&
-    flavors[0].score > flavors[1].score
+    // If there's only one flavor, it's the dominant flavor.
+    (flavors[0]?.score &&
+      flavors[0].score > 0 &&
+      Number(flavors[1]?.score) === 0) ||
+    // There are at least two flavors, and the first one is greater than the second.
+    (flavors[0]?.score &&
+      flavors[1]?.score &&
+      flavors[0].score > flavors[1].score)
   ) {
-    flavorSummary.dominantFlavor = flavors[0].flavor;
+    flavorSummary.dominantFlavor = flavors[0]?.flavor;
   } else {
     flavorSummary.dominantFlavor = "rainbow";
   }

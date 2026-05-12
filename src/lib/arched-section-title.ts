@@ -5,7 +5,7 @@ export const DEFAULT_ARCHED_SECTION_TITLE_VIEWBOX = "0 0 432 84";
 export const DEFAULT_ARCHED_SECTION_TITLE_PATH_D = "M 27 66 Q 216 9 405 10";
 
 const VIEW_MARGIN_X = 16;
-const WORD_GAP_X = 14;
+const WORD_GAP_X = -10;
 
 export interface ArchedSectionTitleOptions {
   /** Visible title text (HTML-escaped when emitted). */

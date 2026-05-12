@@ -22,11 +22,12 @@ import {
 } from "./lib/special-donut-presets";
 import type { WorkerTarget } from "./searchWorker";
 import { archedSectionTitleHtml } from "./lib/arched-section-title";
+import { compressRecipe, decompressRecipe, describeRecipe } from "./lib/donut";
 import {
-  compressRecipe,
-  decompressRecipe,
-  describeRecipe,
-} from "./lib/donut";
+  maximizerSearch,
+  priorityLabel,
+  type MaximizerPriority,
+} from "./lib/maximizer";
 
 const ROTOM_DONUT_MAKER_DETAILS_BASE =
   "https://rotomlabs.net/legends-z-a/donut-maker?b=";
@@ -66,6 +67,8 @@ const summaryEl =
 const loadingEl = document.querySelector<HTMLDivElement>("#results-loading")!;
 const bodyEl = document.querySelector<HTMLDivElement>("#results-body")!;
 const submitBtn = document.querySelector<HTMLButtonElement>("#submit-btn")!;
+const resultsTargetsEl =
+  document.querySelector<HTMLDivElement>("#results-targets")!;
 
 const RESULTS_IDLE_BODY =
   'Press "Find combinations" to see valid matching combinations.';
@@ -91,7 +94,10 @@ document.querySelector(".inventory-section")!.insertAdjacentHTML(
   }),
 );
 
-document.querySelector("#target-form")!.parentElement!.insertAdjacentHTML(
+const recipeFinderSection = document.querySelector<HTMLElement>(
+  '[aria-labelledby="targets-heading"]',
+)!;
+recipeFinderSection.insertAdjacentHTML(
   "afterbegin",
   archedSectionTitleHtml({
     title: "Recipe Finder",
@@ -99,6 +105,24 @@ document.querySelector("#target-form")!.parentElement!.insertAdjacentHTML(
     headingId: "targets-heading",
   }),
 );
+
+const rfTabBar =
+  recipeFinderSection.querySelector<HTMLElement>(".rf-tabs")!;
+rfTabBar.addEventListener("click", (e) => {
+  const clicked = (e.target as HTMLElement).closest<HTMLButtonElement>(".rf-tab");
+  if (!clicked || clicked.classList.contains("rf-tab--active")) return;
+
+  for (const tab of rfTabBar.querySelectorAll<HTMLButtonElement>(".rf-tab")) {
+    const isActive = tab === clicked;
+    tab.classList.toggle("rf-tab--active", isActive);
+    tab.setAttribute("aria-selected", isActive ? "true" : "false");
+    const panelId = tab.getAttribute("aria-controls");
+    if (panelId) {
+      const panel = document.getElementById(panelId);
+      if (panel) panel.hidden = !isActive;
+    }
+  }
+});
 
 document.querySelector("#results-panel")!.insertAdjacentHTML(
   "afterbegin",
@@ -359,6 +383,12 @@ function appendStarRow(parent: HTMLElement, stars: number): void {
   parent.appendChild(row);
 }
 
+function createFAIcon(icon: string): HTMLElement {
+  const span = document.createElement("i");
+  span.className = `fa fa-${icon}`;
+  span.setAttribute("aria-hidden", "true");
+  return span;
+}
 function renderResultsBodyMessage(message: string): void {
   bodyEl.replaceChildren();
   const p = document.createElement("p");
@@ -367,28 +397,43 @@ function renderResultsBodyMessage(message: string): void {
   bodyEl.appendChild(p);
 }
 
+function showResultsTargets(targets: WorkerTarget): void {
+  resultsTargetsEl.innerHTML = FLAVOR_KEYS.map((k) => {
+    const val = targets[k as keyof WorkerTarget] ?? 0;
+    const zeroClass = val === 0 ? " flavor-pill--zero" : "";
+    const name = getFlavorName(k);
+    return `<span title="${name}" class="flavor-pill flavor-pill--${k}${zeroClass}">${escapeHtml(val.toLocaleString())}</span>`;
+  }).join("");
+}
+
+function clearResultsTargets(): void {
+  resultsTargetsEl.innerHTML = "";
+}
+
 /** Before any search has finished — welcoming placeholder in the results panel. */
 function showIdleResults(): void {
   summaryEl.textContent = "";
+  clearResultsTargets();
   renderResultsBodyMessage(RESULTS_IDLE_BODY);
 }
 
 function renderResults(
   combos: ReturnType<typeof findBerryCombinations>,
   onDone?: () => void,
-  options?: { totalBeforeInventory?: number },
+  options?: { totalBeforeInventory?: number; summaryText?: string },
 ): void {
   const totalBefore = options?.totalBeforeInventory;
   const invFiltered = totalBefore !== undefined && totalBefore > combos.length;
 
   summaryEl.textContent =
-    combos.length === 0
+    options?.summaryText ??
+    (combos.length === 0
       ? totalBefore !== undefined && totalBefore > 0
         ? `No combinations match your inventory (${totalBefore.toLocaleString()} before filter). Try raising caps or clearing fields.`
         : "No valid matching combinations for these targets. Try relaxing the flavor targets."
       : invFiltered
         ? `${combos.length.toLocaleString()} combination${combos.length === 1 ? "" : "s"}, lowest calorie first (${totalBefore!.toLocaleString()} before inventory filter).`
-        : `${combos.length.toLocaleString()} combination${combos.length === 1 ? "" : "s"}, lowest calorie first.`;
+        : `${combos.length.toLocaleString()} combination${combos.length === 1 ? "" : "s"}, lowest calorie first.`);
 
   bodyEl.replaceChildren();
 
@@ -458,6 +503,7 @@ function renderResults(
       detailsLink.textContent = "Details";
       detailsLink.target = "_blank";
       detailsLink.rel = "noopener noreferrer";
+      detailsLink.appendChild(createFAIcon("external-link"));
 
       const flavorTotal = document.createElement("span");
       flavorTotal.className = "combo-flavor-total";
@@ -465,9 +511,12 @@ function renderResults(
 
       const levelBoostEl = document.createElement("span");
       levelBoostEl.className = "combo-flavor-level-boost";
-      levelBoostEl.textContent = `Level Boost: ${details.levelBonus.toLocaleString(undefined, {
-        maximumFractionDigits: 2,
-      })}`;
+      levelBoostEl.textContent = `Level Boost: +${details.levelBonus.toLocaleString(
+        undefined,
+        {
+          maximumFractionDigits: 2,
+        },
+      )}`;
 
       flavorStats.append(detailsLink, flavorTotal, levelBoostEl);
 
@@ -529,6 +578,8 @@ form.addEventListener("submit", (e) => {
     bitter: Number(raw.bitter),
     fresh: Number(raw.fresh),
   };
+
+  showResultsTargets(workerTarget);
 
   function finishLoading(): void {
     setCalculating(false);
@@ -594,6 +645,69 @@ form.addEventListener("submit", (e) => {
 
   requestAnimationFrame(() => {
     requestAnimationFrame(paintThenSearch);
+  });
+});
+
+const maximizerForm =
+  document.querySelector<HTMLFormElement>("#maximizer-form")!;
+const maximizerSubmitBtn =
+  document.querySelector<HTMLButtonElement>("#maximizer-submit-btn")!;
+const maximizerErrorEl =
+  document.querySelector<HTMLParagraphElement>("#maximizer-error")!;
+
+maximizerForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  maximizerErrorEl.hidden = true;
+  maximizerErrorEl.textContent = "";
+
+  const fd = new FormData(maximizerForm);
+  const primary = fd.get("primary") as MaximizerPriority;
+  const secondaryRaw = fd.get("secondary") as string;
+  const secondary = secondaryRaw
+    ? (secondaryRaw as MaximizerPriority)
+    : null;
+
+  maximizerSubmitBtn.disabled = true;
+  lastFullCombos = null;
+  summaryEl.textContent = "";
+  clearResultsTargets();
+  bodyEl.replaceChildren();
+  setCalculating(true);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      try {
+        const results = maximizerSearch(
+          primary,
+          secondary,
+          readInventoryCaps(),
+        );
+        const label = priorityLabel(primary);
+        const tbLabel = secondary
+          ? `, tie-breaker: ${priorityLabel(secondary)}`
+          : "";
+        const summaryText =
+          results.length === 0
+            ? "No recipes could be built from your current inventory."
+            : `Top ${results.length.toLocaleString()} recipe${results.length === 1 ? "" : "s"} maximizing ${label}${tbLabel}.`;
+        renderResults(
+          results,
+          () => {
+            setCalculating(false);
+            maximizerSubmitBtn.disabled = false;
+          },
+          { summaryText },
+        );
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Something went wrong.";
+        maximizerErrorEl.textContent = message;
+        maximizerErrorEl.hidden = false;
+        showIdleResults();
+        setCalculating(false);
+        maximizerSubmitBtn.disabled = false;
+      }
+    });
   });
 });
 
