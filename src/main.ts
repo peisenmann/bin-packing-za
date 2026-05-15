@@ -6,7 +6,9 @@ import {
 } from "./lib/find-berry-combinations";
 import {
   type InventoryCap,
-  filterCombosByInventory,
+  type MissingBerry,
+  NearMiss,
+  filterCombosByInventoryWithNearMisses,
   parseBerryInventoryCap,
 } from "./lib/inventory-filter";
 import {
@@ -106,10 +108,11 @@ recipeFinderSection.insertAdjacentHTML(
   }),
 );
 
-const rfTabBar =
-  recipeFinderSection.querySelector<HTMLElement>(".rf-tabs")!;
+const rfTabBar = recipeFinderSection.querySelector<HTMLElement>(".rf-tabs")!;
 rfTabBar.addEventListener("click", (e) => {
-  const clicked = (e.target as HTMLElement).closest<HTMLButtonElement>(".rf-tab");
+  const clicked = (e.target as HTMLElement).closest<HTMLButtonElement>(
+    ".rf-tab",
+  );
   if (!clicked || clicked.classList.contains("rf-tab--active")) return;
 
   for (const tab of rfTabBar.querySelectorAll<HTMLButtonElement>(".rf-tab")) {
@@ -278,18 +281,24 @@ function presentFilteredResults(
   onDone?: () => void,
 ): void {
   lastFullCombos = fullCombos;
-  const filtered = filterCombosByInventory(fullCombos, readInventoryCaps());
-  renderResults(filtered, onDone, {
+  const filterResults = filterCombosByInventoryWithNearMisses(
+    fullCombos,
+    readInventoryCaps(),
+  );
+  renderResults(filterResults.combos, filterResults.nearMisses, onDone, {
     totalBeforeInventory: fullCombos.length,
   });
 }
 
-function rerenderInventoryFilterOnly(): void {
+function rerenderInventoryFilterOnly(onDone?: () => void): void {
   if (!lastFullCombos) {
     return;
   }
-  const filtered = filterCombosByInventory(lastFullCombos, readInventoryCaps());
-  renderResults(filtered, undefined, {
+  const filterResults = filterCombosByInventoryWithNearMisses(
+    lastFullCombos,
+    readInventoryCaps(),
+  );
+  renderResults(filterResults.combos, filterResults.nearMisses, onDone, {
     totalBeforeInventory: lastFullCombos.length,
   });
 }
@@ -417,13 +426,37 @@ function showIdleResults(): void {
   renderResultsBodyMessage(RESULTS_IDLE_BODY);
 }
 
+const NEAR_MISS_UI_MAX_VALID_COMBOS = 100;
+
+function formatNearMissAcquiredPhrase(berries: MissingBerry[]): string {
+  const items = [...berries].sort((a, b) => a.name.localeCompare(b.name));
+  const parts = items.map((b) => `${b.count}x ${b.name}`);
+  if (parts.length === 1) {
+    return parts[0]!;
+  }
+  if (parts.length === 2) {
+    return `${parts[0]} and ${parts[1]}`;
+  }
+  return `${parts.slice(0, -1).join(", ")}, and ${parts[parts.length - 1]!}`;
+}
+
+function nearMissHeaderText(nm: NearMiss): string {
+  const list = formatNearMissAcquiredPhrase(nm.missingBerries);
+  return `If you acquired ${list}, then you could make these combinations`;
+}
+
 function renderResults(
-  combos: ReturnType<typeof findBerryCombinations>,
+  combos: Berry[][],
+  nearMisses: Map<string, NearMiss> | null,
   onDone?: () => void,
   options?: { totalBeforeInventory?: number; summaryText?: string },
 ): void {
   const totalBefore = options?.totalBeforeInventory;
   const invFiltered = totalBefore !== undefined && totalBefore > combos.length;
+  const showNearMisses =
+    nearMisses != null &&
+    nearMisses.size > 0 &&
+    combos.length < NEAR_MISS_UI_MAX_VALID_COMBOS;
 
   summaryEl.textContent =
     options?.summaryText ??
@@ -437,13 +470,83 @@ function renderResults(
 
   bodyEl.replaceChildren();
 
-  if (combos.length === 0) {
+  if (combos.length === 0 && (!nearMisses || nearMisses.size === 0)) {
     renderResultsBodyMessage(
       totalBefore !== undefined && totalBefore > 0
         ? RESULTS_NONE_INVENTORY_BODY
         : RESULTS_NONE_BODY,
     );
     onDone?.();
+    return;
+  }
+
+  function startNearMissRender(): void {
+    if (!showNearMisses || !nearMisses) {
+      onDone?.();
+      return;
+    }
+
+    const sorted = [...nearMisses.values()].sort((a, b) => {
+      const d = a.totalCalories - b.totalCalories;
+      return d !== 0 ? d : a.key.localeCompare(b.key);
+    });
+
+    let nmI = 0;
+    let rowI = 0;
+    let currentList: HTMLOListElement | null = null;
+    const chunk = 400;
+
+    function ensureSection(): boolean {
+      if (nmI >= sorted.length) {
+        onDone?.();
+        return false;
+      }
+      if (!currentList) {
+        const nm = sorted[nmI]!;
+        const block = document.createElement("div");
+        block.className = "near-miss-block";
+        const h = document.createElement("h3");
+        h.className = "near-miss-header";
+        h.textContent = nearMissHeaderText(nm);
+        currentList = document.createElement("ol");
+        currentList.className = "combo-list near-miss-combo-list";
+        block.append(h, currentList);
+        bodyEl.appendChild(block);
+        rowI = 0;
+      }
+      return true;
+    }
+
+    function appendNearMissBatch(): void {
+      if (!ensureSection()) {
+        return;
+      }
+      const nm = sorted[nmI]!;
+      const list = currentList!;
+      const end = Math.min(rowI + chunk, nm.combos.length);
+      const frag = document.createDocumentFragment();
+      for (; rowI < end; rowI++) {
+        frag.appendChild(generateComboElement(nm.combos[rowI]!, rowI));
+      }
+      list.appendChild(frag);
+      if (rowI < nm.combos.length) {
+        requestAnimationFrame(appendNearMissBatch);
+      } else {
+        nmI++;
+        currentList = null;
+        if (nmI < sorted.length) {
+          requestAnimationFrame(appendNearMissBatch);
+        } else {
+          onDone?.();
+        }
+      }
+    }
+
+    requestAnimationFrame(appendNearMissBatch);
+  }
+
+  if (combos.length === 0) {
+    startNearMissRender();
     return;
   }
 
@@ -459,89 +562,94 @@ function renderResults(
     const frag = document.createDocumentFragment();
     for (; i < end; i++) {
       const combo = combos[i]!;
-      const { details, berryLine } = describeRecipe(combo);
-      const li = document.createElement("li");
-      li.className = "combo-row";
-
-      const rank = document.createElement("span");
-      rank.className = "combo-rank";
-      rank.textContent = `#${i + 1}`;
-
-      const berries = document.createElement("span");
-      berries.className = "combo-berries";
-      berries.textContent = berryLine;
-
-      const donutCell = document.createElement("div");
-      donutCell.className = "combo-donut-cell";
-      const donutStack = document.createElement("div");
-      donutStack.className = "combo-donut-stack";
-      const imgSrc = donutImageUrl(
-        details.donutLevel.stars,
-        details.flavorSummary.dominantFlavor,
-      );
-      if (imgSrc) {
-        const donutImg = document.createElement("img");
-        donutImg.className = "combo-donut-img";
-        donutImg.src = imgSrc;
-        donutImg.alt = "";
-        donutImg.decoding = "async";
-        donutImg.setAttribute("aria-hidden", "true");
-        donutStack.appendChild(donutImg);
-      }
-      appendStarRow(donutStack, details.donutLevel.stars);
-      donutCell.appendChild(donutStack);
-
-      const flavors = document.createElement("div");
-      flavors.className = "combo-flavors";
-
-      const flavorStats = document.createElement("div");
-      flavorStats.className = "combo-flavor-stats";
-
-      const detailsLink = document.createElement("a");
-      detailsLink.className = "combo-flavor-details-link";
-      detailsLink.href = ROTOM_DONUT_MAKER_DETAILS_BASE + compressRecipe(combo);
-      detailsLink.textContent = "Details";
-      detailsLink.target = "_blank";
-      detailsLink.rel = "noopener noreferrer";
-      detailsLink.appendChild(createFAIcon("external-link"));
-
-      const flavorTotal = document.createElement("span");
-      flavorTotal.className = "combo-flavor-total";
-      flavorTotal.textContent = `Flavor Score: ${details.flavorSummary.totalFlavorScore.toLocaleString()}`;
-
-      const levelBoostEl = document.createElement("span");
-      levelBoostEl.className = "combo-flavor-level-boost";
-      levelBoostEl.textContent = `Level Boost: +${details.levelBonus.toLocaleString(
-        undefined,
-        {
-          maximumFractionDigits: 2,
-        },
-      )}`;
-
-      flavorStats.append(detailsLink, flavorTotal, levelBoostEl);
-
-      const flavorPills = document.createElement("span");
-      flavorPills.className = "combo-flavor-pills";
-      flavorPills.innerHTML = flavorBreakdownHtml(combo);
-
-      flavors.append(flavorPills, flavorStats);
-
-      const cal = document.createElement("span");
-      cal.className = "combo-cal";
-      cal.textContent = `${details.calories.toLocaleString()} Cal`;
-
-      li.append(rank, berries, donutCell, flavors, cal);
-      frag.appendChild(li);
+      const comboElement = generateComboElement(combo, i);
+      frag.appendChild(comboElement);
     }
     list.appendChild(frag);
     if (i < combos.length) {
       requestAnimationFrame(appendBatch);
     } else {
-      onDone?.();
+      startNearMissRender();
     }
   }
 
   requestAnimationFrame(appendBatch);
+}
+
+function generateComboElement(combo: Berry[], index: number): HTMLElement {
+  const { details, berryLine } = describeRecipe(combo);
+  const li = document.createElement("li");
+  li.className = "combo-row";
+
+  const rank = document.createElement("span");
+  rank.className = "combo-rank";
+  rank.textContent = `#${index + 1}`;
+
+  const berries = document.createElement("span");
+  berries.className = "combo-berries";
+  berries.textContent = berryLine;
+
+  const donutCell = document.createElement("div");
+  donutCell.className = "combo-donut-cell";
+  const donutStack = document.createElement("div");
+  donutStack.className = "combo-donut-stack";
+  const imgSrc = donutImageUrl(
+    details.donutLevel.stars,
+    details.flavorSummary.dominantFlavor,
+  );
+  if (imgSrc) {
+    const donutImg = document.createElement("img");
+    donutImg.className = "combo-donut-img";
+    donutImg.src = imgSrc;
+    donutImg.alt = "";
+    donutImg.decoding = "async";
+    donutImg.setAttribute("aria-hidden", "true");
+    donutStack.appendChild(donutImg);
+  }
+  appendStarRow(donutStack, details.donutLevel.stars);
+  donutCell.appendChild(donutStack);
+
+  const flavors = document.createElement("div");
+  flavors.className = "combo-flavors";
+
+  const flavorStats = document.createElement("div");
+  flavorStats.className = "combo-flavor-stats";
+
+  const detailsLink = document.createElement("a");
+  detailsLink.className = "combo-flavor-details-link";
+  detailsLink.href = ROTOM_DONUT_MAKER_DETAILS_BASE + compressRecipe(combo);
+  detailsLink.textContent = "Details";
+  detailsLink.target = "_blank";
+  detailsLink.rel = "noopener noreferrer";
+  detailsLink.appendChild(createFAIcon("external-link"));
+
+  const flavorTotal = document.createElement("span");
+  flavorTotal.className = "combo-flavor-total";
+  flavorTotal.textContent = `Flavor Score: ${details.flavorSummary.totalFlavorScore.toLocaleString()}`;
+
+  const levelBoostEl = document.createElement("span");
+  levelBoostEl.className = "combo-flavor-level-boost";
+  levelBoostEl.textContent = `Level Boost: +${details.levelBonus.toLocaleString(
+    undefined,
+    {
+      maximumFractionDigits: 2,
+    },
+  )}`;
+
+  flavorStats.append(detailsLink, flavorTotal, levelBoostEl);
+
+  const flavorPills = document.createElement("span");
+  flavorPills.className = "combo-flavor-pills";
+  flavorPills.innerHTML = flavorBreakdownHtml(combo);
+
+  flavors.append(flavorPills, flavorStats);
+
+  const cal = document.createElement("span");
+  cal.className = "combo-cal";
+  cal.textContent = `${details.calories.toLocaleString()} Cal`;
+
+  li.append(rank, berries, donutCell, flavors, cal);
+  return li;
 }
 
 function escapeHtml(text: string): string {
@@ -650,8 +758,9 @@ form.addEventListener("submit", (e) => {
 
 const maximizerForm =
   document.querySelector<HTMLFormElement>("#maximizer-form")!;
-const maximizerSubmitBtn =
-  document.querySelector<HTMLButtonElement>("#maximizer-submit-btn")!;
+const maximizerSubmitBtn = document.querySelector<HTMLButtonElement>(
+  "#maximizer-submit-btn",
+)!;
 const maximizerErrorEl =
   document.querySelector<HTMLParagraphElement>("#maximizer-error")!;
 
@@ -663,9 +772,7 @@ maximizerForm.addEventListener("submit", (e) => {
   const fd = new FormData(maximizerForm);
   const primary = fd.get("primary") as MaximizerPriority;
   const secondaryRaw = fd.get("secondary") as string;
-  const secondary = secondaryRaw
-    ? (secondaryRaw as MaximizerPriority)
-    : null;
+  const secondary = secondaryRaw ? (secondaryRaw as MaximizerPriority) : null;
 
   maximizerSubmitBtn.disabled = true;
   lastFullCombos = null;
@@ -692,6 +799,7 @@ maximizerForm.addEventListener("submit", (e) => {
             : `Top ${results.length.toLocaleString()} recipe${results.length === 1 ? "" : "s"} maximizing ${label}${tbLabel}.`;
         renderResults(
           results,
+          null,
           () => {
             setCalculating(false);
             maximizerSubmitBtn.disabled = false;

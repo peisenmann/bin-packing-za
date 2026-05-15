@@ -764,6 +764,55 @@ body {
   counter-reset: combo;
 }
 
+.near-miss-block {
+  margin-top: 1.35rem;
+}
+
+.results-body > .near-miss-block:first-child {
+  margin-top: 0;
+}
+
+.near-miss-header {
+  margin: 0 0 0.6rem;
+  padding: 0.95rem 1rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: var(--font-univers-next-pro);
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: var(--text);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--accent) 22%, var(--surface)) 0%,
+    color-mix(in srgb, var(--accent-dim) 12%, var(--surface)) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: var(--radius);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+    var(--shadow);
+}
+
+.near-miss-combo-list {
+  margin-bottom: 0.35rem;
+}
+
+.near-miss-combo-list .combo-row {
+  opacity: 0.82;
+  color: color-mix(in srgb, var(--text) 72%, var(--muted));
+  border-bottom-color: color-mix(in srgb, var(--border) 65%, transparent);
+}
+
+.near-miss-combo-list .combo-cal {
+  color: color-mix(in srgb, var(--accent) 55%, var(--muted));
+}
+
+.near-miss-combo-list .combo-star--lit {
+  color: color-mix(in srgb, #e8c84a 75%, var(--muted));
+  text-shadow: none;
+}
+
 .combo-row {
   display: grid;
   grid-template-columns: auto 1fr auto;
