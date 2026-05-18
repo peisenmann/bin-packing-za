@@ -344,6 +344,38 @@ body {
   line-height: 1.45;
 }
 
+.inventory-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+}
+
+.inventory-action-btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.inventory-action-btn:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg));
+}
+
+.inventory-action-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .inventory-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

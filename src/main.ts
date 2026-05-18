@@ -73,7 +73,7 @@ const resultsTargetsEl =
   document.querySelector<HTMLDivElement>("#results-targets")!;
 
 const RESULTS_IDLE_BODY =
-  'Press "Find combinations" to see valid matching combinations.';
+  'Press "Find recipes" to see valid matching combinations.';
 
 const RESULTS_NONE_BODY =
   "No valid matching combinations for these flavor targets. Try relaxing the targets.";
@@ -302,6 +302,28 @@ function rerenderInventoryFilterOnly(onDone?: () => void): void {
     totalBeforeInventory: lastFullCombos.length,
   });
 }
+
+function setAllInventoryCaps(value: string): void {
+  for (const input of inventoryGrid.querySelectorAll<HTMLInputElement>(
+    "input[data-berry-name]",
+  )) {
+    input.value = value;
+  }
+  persistInventory(inventoryGrid);
+  rerenderInventoryFilterOnly();
+}
+
+document
+  .getElementById("inventory-set-all-unlimited")
+  ?.addEventListener("click", () => {
+    setAllInventoryCaps("");
+  });
+
+document
+  .getElementById("inventory-set-all-zero")
+  ?.addEventListener("click", () => {
+    setAllInventoryCaps("0");
+  });
 
 inventoryGrid.addEventListener("input", () => {
   persistInventory(inventoryGrid);

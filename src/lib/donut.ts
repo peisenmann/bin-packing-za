@@ -84,7 +84,6 @@ function getFlavorSummary(recipe: Berry[]): FlavorSummary {
     }),
   );
   flavors.sort((a, b) => b.score - a.score);
-  console.log("flavors", flavors);
   if (
     // If there's only one flavor, it's the dominant flavor.
     (flavors[0]?.score &&
